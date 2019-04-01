@@ -1,5 +1,6 @@
 const { series } = require('gulp');
 const shell = require('shelljs');
+shell.exec = require('shelljs.exec');
 const fs = require('fs');
 const tippecanoe = require('tippecanoe');
 const mkdirp = require('mkdirp');
@@ -33,8 +34,12 @@ const boundaryTypes = {
 }
 
 let activeBoundaryTypes=['ELB_2018']; // TODO or environment variable
-const tmpDir = `./tmp`;
-const geojsonDir = `./geojson`;
+
+const srcDir = `./srcdata`;                     // where to find source zip files. Nothing written here
+const tmpDir = `./tmp`;                         // where zip files are temporarily unzipped to
+const geojsonDir = `./geojson`;                 // where generated newline-delimited GeoJSON files are written
+const regionMappingDir = `./regionMapping`;     // where to find and update regionmapping file and write regionids files
+const tesseraDir = `./tessera`;                 // where to find and update tessera_config.json
 
 async function toGeoJSON() {
     mkdirp(tmpDir);
@@ -43,7 +48,7 @@ async function toGeoJSON() {
         const geojsonName = `${geojsonDir}/${bt}.nd.json`;
         shell.rm(`-f`, geojsonName);
             
-        const srcDir = `srcdata/${bt}`;
+        const srcDir = `${srcDir}/${bt}`;
         for (let zipName of Object.keys(boundaryTypes[bt].shapeNames)) {
             shell.rm(`-f`, `${tmpDir}/*`);
             shell.exec(`unzip -j ${srcDir}/${zipName} -d ${tmpDir}`, { silent: true });
@@ -68,13 +73,15 @@ async function addFeatureIds() {
             const inStream = fs.createReadStream(`${geojsonDir}/${bt}.nd.json`).pipe(ndjson.parse());
             const outStream = fs.createWriteStream(`${geojsonDir}/${bt}-fid.nd.json`);
             let fid = 0;
+            // alternatively: 
+            // shell.exec(`ndjson-map "d.properties['${fidField}']=i, d" < ${geojsonDir}/${bt}.nd.json > ${geojsonDir}/${bt}-fid.nd.json`);
             inStream.on('data', feature => {
                 feature.properties[fidField] = fid ++;
                 outStream.write(JSON.stringify(feature) + '\n');
             }).on('end', resolve);
 
-            // HERE
-            shell.exec(`ndjson-map "d.properties['${fidField}']=i, d" < ${geojsonDir}/${bt}.nd.json > ${geojsonDir}/${bt}-fid.nd.json`);
+        
+            
         });
     }
 
@@ -98,7 +105,7 @@ async function makeVectorTiles() {
 }
 
 async function updateRegionMapping() {
-    mkdirp('regionMapping');
+    mkdirp(regionMappingDir);
     const regionMapping = {
         regionWmsMap: {}
     };
@@ -119,7 +126,7 @@ async function updateRegionMapping() {
             regionMapping.regionWmsMap[bt] = regionMappingEntry;
         }
     }
-    fs.writeFileSync(`regionMapping/regionMapping.json`, JSON.stringify(regionMapping, null, 2));
+    fs.writeFileSync(`${regionMappingDir}/regionMapping.json`, JSON.stringify(regionMapping, null, 2));
 }
 
 async function regionIdsContents(bt, rt) {
@@ -156,8 +163,8 @@ async function makeRegionIds() {
 }
 
 async function updateTessera() {
-    mkdirp('tessera');
-    const configFile = './tessera/tessera_config.json';
+    mkdirp(tesseraDir);
+    const configFile = `./${tesseraDir}/tessera_config.json`;
     const config = await jsonfile.readFile(configFile).catch(e => ({}));
     for (let  bt of activeBoundaryTypes) {
         const mbtilesFile = `data/${bt}.mbtiles`;
