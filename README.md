@@ -50,7 +50,9 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
 #### S3: Create bucket
 
 1. Name it according to the subdomain you will use, eg `tiles.terria.io`
-2. Set the policies to fully public, with this bucket policy:
+   * Region: Asia Pacific (Sydney)
+   * Uncheck all four "Manage public access control lists (ACLs) for this bucket" and "Manage public bucket policies for this bucket" options
+2. In the bucket, Permissions > Bucket Policy, paste this (updating the bucket name):
 
 ```
  {
@@ -60,15 +62,13 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
          "Effect":"Allow",
        "Principal": "*",
        "Action":["s3:GetObject"],
-       "Resource":["arn:aws:s3:::vector-tile-test/*"
+       "Resource":["arn:aws:s3:::tiles.terria.io/*"
        ]
      }
    ]
  }
 ```
-
-3. Enable static website hosting.
-4. On Permissions > CORS Configuration, add this configuration:
+3. On Permissions > CORS Configuration, add this configuration:
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -80,22 +80,26 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
     <AllowedHeader>Authorization</AllowedHeader>
 </CORSRule>
 </CORSConfiguration>
+4. On Properties > Static website hosting, choose "Use this bucket to host a website"
+  * Set "index.html" as the index document, even though you won't be using one. (Can't save otherwise).
+
 ```
-
-#### Route 53: create subdomain
-
-1. Create a Record Set, `tiles.terria.io`
-2. Check the Alias "Yes" box, and find your S3 website.
 
 #### CloudFront
 
 1. Create a distribution, mode "Web".
-  *  Origin domain name: `tiles.terria.io.s3.amazonaws.com`
+  *  Origin domain name: select your S3 name: `tiles.terria.io.s3.amazonaws.com`
   * Scroll down, "Alternate domain names (CNAMEs)": `tiles.terria.io`
   * SSL Certificate: "Custom SSL Certificate", choose terria.io's certificate.
-2. On "Behaviors", change "Cache based on Selected Request Headers" to "Whitelist"
+2. On "Behaviors", edit the existing behaviour.
+3. Change "Cache based on Selected Request Headers" to "Whitelist"
   * Add these to whitelist:
     - Access-Control-Request-Headers
     - Access-Control-Request-Method
     - Origin
-3. Now, back in Route 53, update the subdomain to point to the CloudFront distribution instead of directly to S3. (Maybe this could be done in a better order).
+
+#### Route 53: create subdomain
+
+1. Go to Hosted zones, terria.io
+2. Create a Record Set, `tiles.terria.io`
+3. Check the Alias "Yes" box, find your Cloudfront distribution
