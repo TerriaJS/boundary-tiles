@@ -1,14 +1,13 @@
 const { series } = require('gulp');
 const shell = require('shelljs');
-shell.exec = require('shelljs.exec');
+shell.exec2 = require('shelljs.exec');
 const fs = require('fs');
 const tippecanoe = require('tippecanoe');
 const mkdirp = require('mkdirp');
 const ndjson = require('ndjson');
 const jsonfile = require('jsonfile');
-
 const boundaryTypes = {
-    ELB_2018: {
+    ELB_2019: {
         tippecanoeOptions: {
             minimumZoom: 2,
             maximumZoom: 12 // required
@@ -22,24 +21,38 @@ const boundaryTypes = {
             'vic-july-2018-esri.zip': 'E_AUGFN3_region.shp',
             'wa-esri-19012016.zip':'WA_Electoral_Boundaries_19-01-2016.shp'
         }, regionTypes: {
-            ELB_NAME_2018: {
+            ELB_NAME_2019: {
                 regionProp: 'Sortname', // TODO normalise caps for NSW
                 nameProp: 'Sortname',
-                aliases: ['elb'],
+                aliases: ['elb','elb_name'],
                 description: 'Federal electoral divisions for 2019 election (AEC)',
-                //uniqueIdProp
+                "bbox": [
+                    96.81694140799998,
+                    -43.74050960300003,
+                    159.10921900799997,
+                    -9.142175976999999
+                ],
+                    // optional extra props get passed straight through to regionMapping.json
+                // uniqueIdProp
+                // disambigProp
+                // disambigRegionId
+                // regionDisambigIdsFile
             }
         }
     }    
 }
 
-let activeBoundaryTypes=['ELB_2018']; // TODO or environment variable
+let activeBoundaryTypes = Object.keys(boundaryTypes); // TODO or environment variable
+if (process.env.BOUNDARYTYPES) {
+    activeBoundaryTypes = process.env.BOUNDARYTYPES.split(',');
+}
 
-const srcDir = `./srcdata`;                     // where to find source zip files. Nothing written here
+const srcDataDir = `./srcdata`;                     // where to find source zip files. Nothing written here
 const tmpDir = `./tmp`;                         // where zip files are temporarily unzipped to
 const geojsonDir = `./geojson`;                 // where generated newline-delimited GeoJSON files are written
 const regionMappingDir = `./regionMapping`;     // where to find and update regionmapping file and write regionids files
 const tesseraDir = `./tessera`;                 // where to find and update tessera_config.json
+const tileHost = `tile-test.terria.io`;
 
 async function toGeoJSON() {
     mkdirp(tmpDir);
@@ -48,10 +61,10 @@ async function toGeoJSON() {
         const geojsonName = `${geojsonDir}/${bt}.nd.json`;
         shell.rm(`-f`, geojsonName);
             
-        const srcDir = `${srcDir}/${bt}`;
+        const srcDir = `${srcDataDir}/${bt}`;
         for (let zipName of Object.keys(boundaryTypes[bt].shapeNames)) {
             shell.rm(`-f`, `${tmpDir}/*`);
-            shell.exec(`unzip -j ${srcDir}/${zipName} -d ${tmpDir}`, { silent: true });
+            shell.exec(`unzip -j ${srcDir}/${zipName} -d ${tmpDir}`);//, { silent: true });
             // ogr2ogr doesn't seem to work properly with `/dev/stdout`
             // .exec(...).toEnd(...) should work but truncates the file.
             
@@ -73,12 +86,17 @@ async function addFeatureIds() {
             const inStream = fs.createReadStream(`${geojsonDir}/${bt}.nd.json`).pipe(ndjson.parse());
             const outStream = fs.createWriteStream(`${geojsonDir}/${bt}-fid.nd.json`);
             let fid = 0;
+            let count=0;
             // alternatively: 
             // shell.exec(`ndjson-map "d.properties['${fidField}']=i, d" < ${geojsonDir}/${bt}.nd.json > ${geojsonDir}/${bt}-fid.nd.json`);
             inStream.on('data', feature => {
                 feature.properties[fidField] = fid ++;
                 outStream.write(JSON.stringify(feature) + '\n');
-            }).on('end', resolve);
+                count++;
+            }).on('end', () => {
+                console.log(`Added ${count} feature IDs.`);
+                resolve();
+            });
 
         
             
@@ -91,15 +109,18 @@ async function makeVectorTiles() {
     mkdirp('mbtiles');
     for (let bt of activeBoundaryTypes) {
         const btOptions = boundaryTypes[bt].tippecanoeOptions;
-        tippecanoe([`${geojsonDir}/${bt}.nd.json`], {
-            layer: bt,
-            output: `./mbtiles/${bt}.mbtiles`,
-            force: true,
-            readParallel: true,
-            simplifyOnlyLowZooms: true,
-            fullDetail: 32 - btOptions.maximumZoom,
-            ...btOptions,
-        }, { echo: true });
+        tippecanoe(
+            [`${geojsonDir}/${bt}-fid.nd.json`], 
+            Object.assign({
+                layer: bt,
+                output: `./mbtiles/${bt}.mbtiles`,
+                force: true,
+                readParallel: true,
+                simplifyOnlyLowZooms: true,
+                fullDetail: 32 - btOptions.maximumZoom,
+                }, btOptions,
+            ), 
+            { echo: true });
     }
     console.log('make vector tiles');
 }
@@ -110,19 +131,18 @@ async function updateRegionMapping() {
         regionWmsMap: {}
     };
     for (let  bt of activeBoundaryTypes) {
-        const regionTypes = Object.keys(boundaryTypes[bt].regionTypes);
-        for (let rt of regionTypes) {
-            const regionMappingEntry = {
+        const regionTypes = boundaryTypes[bt].regionTypes;
+        for (let rt of Object.keys(regionTypes)) {
+            console.log(regionTypes);
+            const regionMappingEntry = Object.assign({}, {
                 layerName: bt,
-                server: `https://vector-tiles.terria.io/${bt}/{z}/{x}/{y}.pbf`,
+                server: `https://${tileHost}/${bt}/{z}/{x}/{y}.pbf`,
                 serverType: 'MVT',
                 serverMaxNativeZoom: boundaryTypes[bt].tippecanoeOptions.maximumZoom,
                 serverMinZoom: boundaryTypes[bt].tippecanoeOptions.minimumZoom,
                 regionIdsFile: `build/TerriaJS/data/regionids/region_map-${rt}_${bt}.json`,
                 // TODO bbox
-                ...regionTypes[rt]
-            }
-
+            }, regionTypes[rt]);            
             regionMapping.regionWmsMap[bt] = regionMappingEntry;
         }
     }
@@ -157,7 +177,9 @@ async function makeRegionIds() {
         for (let rt of Object.keys(regionTypes)) {
             mkdirp('regionMapping/regionids');
             const contents = await regionIdsContents(bt, rt); // TODO make parallel
-            fs.writeFileSync(`regionMapping/regionids/region_map-${rt}_${bt}.json`, JSON.stringify(contents));
+            const filename = `regionMapping/regionids/region_map-${rt}_${bt}.json`;
+            fs.writeFileSync(filename, JSON.stringify(contents));
+            console.log(`Wrote ${contents.values.length} regionIds to ${filename}`);
         }
     }
 }
@@ -178,9 +200,39 @@ async function updateTessera() {
     await jsonfile.writeFile(configFile, config, { spaces: 2 });
 }
 
+async function deploy() {
+    function getProgress(stats, progress) {
+        // rewrites over the same line.
+        process.stdout.write(`\r${progress.transferred} tiles, ${Math.round(progress.percentage)}% (${progress.runtime}s)`);
+    }
 
-async function defaultTask() {
-    console.log('default!');
+    const userConfig = require('./userconfig.json');
+
+    console.log(__dirname);
+    const creds = JSON.parse(shell.exec(`aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`, { silent: true }).stdout).Credentials;
+    if (creds) {
+        console.log('AWS Session token acquired.');
+    }
+    process.env.AWS_ACCESS_KEY_ID = creds.AccessKeyId;
+    process.env.AWS_SECRET_ACCESS_KEY = creds.SecretAccessKey;
+    process.env.AWS_SESSION_TOKEN = creds.SessionToken;
+
+    // console.log(`AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}`)
+    // console.log(`AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY}`);
+    // console.log(`AWS_SESSION_TOKEN=${process.env.AWS_SESSION_TOKEN}`);
+
+    for (let bt of activeBoundaryTypes) {
+        const tileCopy = require('@mapbox/mapbox-tile-copy');
+        console.log(''); // clear space before progress output
+        
+        // alternative method: shell.exec(`mapbox-tile-copy  mbtiles/${bt}.mbtiles s3://tile-test.terria.io/${bt}/{z}/{x}/{y}.pbf`);
+        return new Promise((resolve, reject) => 
+            tileCopy(`mbtiles/${bt}.mbtiles`, `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`, { progress: getProgress }, (d) => {
+                console.log(d);
+                resolve();
+            })
+        );
+    }
 }
   
 exports.makeVectorTiles = makeVectorTiles;
@@ -189,5 +241,6 @@ exports.updateRegionMapping = updateRegionMapping;
 exports.makeRegionIds = makeRegionIds;
 exports.addFeatureIds = addFeatureIds;
 exports.updateTessera = updateTessera;
+exports.deploy = deploy;
 
 exports.default = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, updateRegionMapping, updateTessera);
