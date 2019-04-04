@@ -9,8 +9,9 @@ const jsonfile = require('jsonfile');
 const boundaryTypes = {
     ELB_2019: {
         tippecanoeOptions: {
-            minimumZoom: 2,
-            maximumZoom: 12 // required
+            minimumZoom: 0,
+            maximumZoom: 12
+            // maximumZoom: 12 // required
         }, shapeNames: {
             'act-july-2018-esri.zip': 'E_ACT_18_region.shp',
             'nsw-esri-06042016.zip': 'NSW_electoral_boundaries_25-02-2016.shp',
@@ -32,7 +33,7 @@ const boundaryTypes = {
                     159.10921900799997,
                     -9.142175976999999
                 ],
-                    // optional extra props get passed straight through to regionMapping.json
+                // optional extra props get passed straight through to regionMapping.json
                 // uniqueIdProp
                 // disambigProp
                 // disambigRegionId
@@ -52,7 +53,8 @@ const tmpDir = `./tmp`;                         // where zip files are temporari
 const geojsonDir = `./geojson`;                 // where generated newline-delimited GeoJSON files are written
 const regionMappingDir = `./regionMapping`;     // where to find and update regionmapping file and write regionids files
 const tesseraDir = `./tessera`;                 // where to find and update tessera_config.json
-const tileHost = `tile-test.terria.io`;
+const tileHost = `tiles.terria.io`;
+const testCsvDir = './test';
 
 async function toGeoJSON() {
     mkdirp(tmpDir);
@@ -149,6 +151,19 @@ async function updateRegionMapping() {
     fs.writeFileSync(`${regionMappingDir}/regionMapping.json`, JSON.stringify(regionMapping, null, 2));
 }
 
+function writeTestCsv(contents, bt, rt) {
+    mkdirp(testCsvDir);
+    const filename =`${testCsvDir}/${bt}_${rt}.csv`;
+    const rows = [[rt, 'Value']];
+    contents.values.forEach(val => {
+        if (Math.random() > 0.8) {
+            rows.push([val, Math.round(Math.random() * 100)]);
+        }
+    });
+    fs.writeFileSync(filename, rows.map(row => row.join(',')).join('\n'));
+    console.log(`Wrote ${rows.length} rows to ${filename}.`);
+}
+
 async function regionIdsContents(bt, rt) {
     let values = [];
     const regionTypes = boundaryTypes[bt].regionTypes;
@@ -171,12 +186,13 @@ async function regionIdsContents(bt, rt) {
 }
 
 async function makeRegionIds() { 
-    for (let  bt of activeBoundaryTypes) {
+    for (let bt of activeBoundaryTypes) {
         const regionTypes = boundaryTypes[bt].regionTypes;
         
         for (let rt of Object.keys(regionTypes)) {
             mkdirp('regionMapping/regionids');
             const contents = await regionIdsContents(bt, rt); // TODO make parallel
+            writeTestCsv(contents, bt, rt)
             const filename = `regionMapping/regionids/region_map-${rt}_${bt}.json`;
             fs.writeFileSync(filename, JSON.stringify(contents));
             console.log(`Wrote ${contents.values.length} regionIds to ${filename}`);
@@ -209,7 +225,11 @@ async function deploy() {
     const userConfig = require('./userconfig.json');
 
     console.log(__dirname);
-    const creds = JSON.parse(shell.exec(`aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`, { silent: true }).stdout).Credentials;
+    const response = shell.exec(`aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`, { silent: true });
+    if (response.stderr) {
+        console.error(response.stderr);
+    }
+    const creds = JSON.parse(response.stdout).Credentials;
     if (creds) {
         console.log('AWS Session token acquired.');
     }
