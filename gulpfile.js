@@ -186,15 +186,17 @@ async function regionIdsContents(bt, rt) {
 }
 
 async function makeRegionIds() { 
+    mkdirp('regionMapping/regionids');
     for (let bt of activeBoundaryTypes) {
         const regionTypes = boundaryTypes[bt].regionTypes;
         
         for (let rt of Object.keys(regionTypes)) {
-            mkdirp('regionMapping/regionids');
             const contents = await regionIdsContents(bt, rt); // TODO make parallel
             writeTestCsv(contents, bt, rt)
+            
             const filename = `regionMapping/regionids/region_map-${rt}_${bt}.json`;
             fs.writeFileSync(filename, JSON.stringify(contents));
+            
             console.log(`Wrote ${contents.values.length} regionIds to ${filename}`);
         }
     }
@@ -224,7 +226,6 @@ async function deploy() {
 
     const userConfig = require('./userconfig.json');
 
-    console.log(__dirname);
     const response = shell.exec(`aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`, { silent: true });
     if (response.stderr) {
         console.error(response.stderr);
@@ -248,7 +249,9 @@ async function deploy() {
         // alternative method: shell.exec(`mapbox-tile-copy  mbtiles/${bt}.mbtiles s3://tile-test.terria.io/${bt}/{z}/{x}/{y}.pbf`);
         return new Promise((resolve, reject) => 
             tileCopy(`mbtiles/${bt}.mbtiles`, `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`, { progress: getProgress }, (d) => {
-                console.log(d);
+                if (d !== undefined) {
+                    console.log(d);
+                }
                 resolve();
             })
         );
