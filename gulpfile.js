@@ -27,12 +27,7 @@ const boundaryTypes = {
                 nameProp: 'Sortname',
                 aliases: ['elb','elb_name'],
                 description: 'Federal electoral divisions for 2019 election (AEC)',
-                "bbox": [
-                    96.81694140799998,
-                    -43.74050960300003,
-                    159.10921900799997,
-                    -9.142175976999999
-                ],
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
                 // optional extra props get passed straight through to regionMapping.json
                 // uniqueIdProp
                 // disambigProp
@@ -40,7 +35,32 @@ const boundaryTypes = {
                 // regionDisambigIdsFile
             }
         }
-    }    
+    }, CED_2018: {
+        tippecanoeOptions: {
+            minimumZoom: 0,
+            maximumZoom: 12
+            // maximumZoom: 12 // required
+        }, shapeNames: {
+            // http://www.abs.gov.au/ausstats/subscriber.nsf/log?openagent&1270055003_ced_2018_aust_shp.zip&1270.0.55.003&Data%20Cubes&BF4D23C712D492CFCA2582F600180556&0&July%202018&28.08.2018&Latest
+            '1270055003_ced_2018_aust_shp.zip': 'CED_2018_AUST.shp',
+            
+        }, regionTypes: {
+            CED_CODE18: {
+                regionProp: 'CED_CODE18',
+                nameProp: 'CED_NAME18',
+                aliases: ['CED_CODE18', 'ced', 'ced_code', 'ced_2018', 'ced_code_2018'],
+                description: 'Commonwealth electoral divisions 2018 by code (ABS)',
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
+            },
+            CED_NAME18: {
+                regionProp: 'CED_NAME18',
+                nameProp: 'CED_NAME18',
+                aliases: ['CED_NAME18', 'ced_name', 'ced_name_2018'],
+                description: 'Commonwealth electoral divisions 2018 by name (ABS)',
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
+            },
+        }
+    }
 }
 
 let activeBoundaryTypes = Object.keys(boundaryTypes); // TODO or environment variable
@@ -55,6 +75,7 @@ const regionMappingDir = `./regionMapping`;     // where to find and update regi
 const tesseraDir = `./tessera`;                 // where to find and update tessera_config.json
 const tileHost = `tiles.terria.io`;
 const testCsvDir = './test';
+const mbtilesDir = './mbtiles';
 
 async function toGeoJSON() {
     mkdirp(tmpDir);
@@ -108,14 +129,14 @@ async function addFeatureIds() {
 }
 
 async function makeVectorTiles() {
-    mkdirp('mbtiles');
+    mkdirp(mbtilesDir);
     for (let bt of activeBoundaryTypes) {
         const btOptions = boundaryTypes[bt].tippecanoeOptions;
         tippecanoe(
             [`${geojsonDir}/${bt}-fid.nd.json`], 
             Object.assign({
                 layer: bt,
-                output: `./mbtiles/${bt}.mbtiles`,
+                output: `${mbtilesDir}/${bt}.mbtiles`,
                 force: true,
                 readParallel: true,
                 simplifyOnlyLowZooms: true,
@@ -127,28 +148,35 @@ async function makeVectorTiles() {
     console.log('make vector tiles');
 }
 
-async function updateRegionMapping() {
-    mkdirp(regionMappingDir);
-    const regionMapping = {
-        regionWmsMap: {}
-    };
-    for (let  bt of activeBoundaryTypes) {
-        const regionTypes = boundaryTypes[bt].regionTypes;
-        for (let rt of Object.keys(regionTypes)) {
-            console.log(regionTypes);
-            const regionMappingEntry = Object.assign({}, {
-                layerName: bt,
-                server: `https://${tileHost}/${bt}/{z}/{x}/{y}.pbf`,
-                serverType: 'MVT',
-                serverMaxNativeZoom: boundaryTypes[bt].tippecanoeOptions.maximumZoom,
-                serverMinZoom: boundaryTypes[bt].tippecanoeOptions.minimumZoom,
-                regionIdsFile: `build/TerriaJS/data/regionids/region_map-${rt}_${bt}.json`,
-                // TODO bbox
-            }, regionTypes[rt]);            
-            regionMapping.regionWmsMap[bt] = regionMappingEntry;
+async function writeRegionMappingFile() {
+    function regionMappingContent(env = 'prod') {
+        const regionMapping = {
+            regionWmsMap: {}
+        };
+        for (let  bt of activeBoundaryTypes) {
+            const server = {
+                prod: `https://${tileHost}/${bt}/{z}/{x}/{y}.pbf`,
+                local: `http://localhost:4040/${bt}/{z}/{x}/{y}.pbf`
+            }[env];
+            const regionTypes = boundaryTypes[bt].regionTypes;
+            for (let rt of Object.keys(regionTypes)) {
+                const regionMappingEntry = Object.assign({}, {
+                    layerName: bt,
+                    server: server,
+                    serverType: 'MVT',
+                    serverMaxNativeZoom: boundaryTypes[bt].tippecanoeOptions.maximumZoom,
+                    serverMinZoom: boundaryTypes[bt].tippecanoeOptions.minimumZoom,
+                    regionIdsFile: `build/TerriaJS/data/regionids/region_map-${rt}_${bt}.json`,
+                    // TODO bbox
+                }, regionTypes[rt]);            
+                regionMapping.regionWmsMap[rt] = regionMappingEntry;
+            }
         }
+        return regionMapping;
     }
-    fs.writeFileSync(`${regionMappingDir}/regionMapping.json`, JSON.stringify(regionMapping, null, 2));
+    mkdirp(regionMappingDir);
+    fs.writeFileSync(`${regionMappingDir}/regionMapping.json`, JSON.stringify(regionMappingContent('prod'), null, 2));
+    fs.writeFileSync(`${regionMappingDir}/regionMapping-local.json`, JSON.stringify(regionMappingContent('local'), null, 2));
 }
 
 function writeTestCsv(contents, bt, rt) {
@@ -202,21 +230,35 @@ async function makeRegionIds() {
     }
 }
 
-async function updateTessera() {
-    mkdirp(tesseraDir);
-    const configFile = `./${tesseraDir}/tessera_config.json`;
-    const config = await jsonfile.readFile(configFile).catch(e => ({}));
+// async function updateTessera() {
+//     mkdirp(tesseraDir);
+//     const configFile = `./${tesseraDir}/tessera_config.json`;
+//     const config = await jsonfile.readFile(configFile).catch(e => ({}));
+//     for (let  bt of activeBoundaryTypes) {
+//         const mbtilesFile = `data/${bt}.mbtiles`;
+//         config[`/${bt}`] = {
+//             source: `mbtiles:///etc/vector-tiles/${mbtilesFile}`,
+//             headers: { 
+//                 'Cache-Control': 'public,max-age=86400'
+//             }
+//         }
+//     }
+//     await jsonfile.writeFile(configFile, config, { spaces: 2 });
+// }
+
+// Writes some local config files for running a Tessera instance in development. Not needed for production.
+async function writeTessera() {
+    mkdirp(mbtilesDir);
     for (let  bt of activeBoundaryTypes) {
-        const mbtilesFile = `data/${bt}.mbtiles`;
-        config[`/${bt}`] = {
-            source: `mbtiles:///etc/vector-tiles/${mbtilesFile}`,
-            headers: { 
-                'Cache-Control': 'public,max-age=86400'
+        const config = {
+            [`/${bt}`]: {
+                source: `mbtiles://./${mbtilesDir}/${bt}.mbtiles`,
             }
-        }
+        };
+        await jsonfile.writeFile(`${mbtilesDir}/${bt}_tessera.json`, config, { spaces: 2 });
     }
-    await jsonfile.writeFile(configFile, config, { spaces: 2 });
 }
+
 
 async function deploy() {
     function getProgress(stats, progress) {
@@ -248,7 +290,7 @@ async function deploy() {
         
         // alternative method: shell.exec(`mapbox-tile-copy  mbtiles/${bt}.mbtiles s3://tile-test.terria.io/${bt}/{z}/{x}/{y}.pbf`);
         return new Promise((resolve, reject) => 
-            tileCopy(`mbtiles/${bt}.mbtiles`, `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`, { progress: getProgress }, (d) => {
+            tileCopy(`${mbtilesDir}/${bt}.mbtiles`, `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`, { progress: getProgress }, (d) => {
                 if (d !== undefined) {
                     console.log(d);
                 }
@@ -260,10 +302,13 @@ async function deploy() {
   
 exports.makeVectorTiles = makeVectorTiles;
 exports.toGeoJSON = toGeoJSON;
-exports.updateRegionMapping = updateRegionMapping;
+exports.writeRegionMappingFile = writeRegionMappingFile;
 exports.makeRegionIds = makeRegionIds;
 exports.addFeatureIds = addFeatureIds;
-exports.updateTessera = updateTessera;
+exports.writeTessera = writeTessera;
+// exports.updateTessera = updateTessera;
 exports.deploy = deploy;
 
-exports.default = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, updateRegionMapping, updateTessera);
+exports.updateRegionMapping = series(makeRegionIds, writeRegionMappingFile);
+
+exports.default = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, exports.updateRegionMapping);
