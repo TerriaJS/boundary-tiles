@@ -13,6 +13,7 @@ const boundaryTypes = {
             maximumZoom: 12
             // maximumZoom: 12 // required
         }, shapeNames: {
+            //https://www.aec.gov.au/electorates/gis/index.htm
             'act-july-2018-esri.zip': 'E_ACT_18_region.shp',
             'nsw-esri-06042016.zip': 'NSW_electoral_boundaries_25-02-2016.shp',
             'nt-esri-07022017.zip': 'E_Propos_region.shp',
@@ -38,7 +39,7 @@ const boundaryTypes = {
     }, CED_2018: {
         tippecanoeOptions: {
             minimumZoom: 0,
-            maximumZoom: 12
+            maximumZoom: 12,
             // maximumZoom: 12 // required
         }, shapeNames: {
             // http://www.abs.gov.au/ausstats/subscriber.nsf/log?openagent&1270055003_ced_2018_aust_shp.zip&1270.0.55.003&Data%20Cubes&BF4D23C712D492CFCA2582F600180556&0&July%202018&28.08.2018&Latest
@@ -48,14 +49,15 @@ const boundaryTypes = {
             CED_CODE18: {
                 regionProp: 'CED_CODE18',
                 nameProp: 'CED_NAME18',
-                aliases: ['CED_CODE18', 'ced', 'ced_code', 'ced_2018', 'ced_code_2018'],
+                aliases: ['ced', 'ced_code', 'ced_2018', 'ced_code_2018'],
                 description: 'Commonwealth electoral divisions 2018 by code (ABS)',
                 bbox: [96.82, -43.74, 159.11, -9.14 ],
+                digits: 3
             },
             CED_NAME18: {
                 regionProp: 'CED_NAME18',
                 nameProp: 'CED_NAME18',
-                aliases: ['CED_NAME18', 'ced_name', 'ced_name_2018'],
+                aliases: ['ced_name', 'ced_name_2018'],
                 description: 'Commonwealth electoral divisions 2018 by name (ABS)',
                 bbox: [96.82, -43.74, 159.11, -9.14 ],
             },
@@ -166,6 +168,7 @@ async function writeRegionMappingFile() {
                     serverType: 'MVT',
                     serverMaxNativeZoom: boundaryTypes[bt].tippecanoeOptions.maximumZoom,
                     serverMinZoom: boundaryTypes[bt].tippecanoeOptions.minimumZoom,
+                    serverMaxZoom: 28,
                     regionIdsFile: `build/TerriaJS/data/regionids/region_map-${rt}_${bt}.json`,
                     // TODO bbox
                 }, regionTypes[rt]);            
