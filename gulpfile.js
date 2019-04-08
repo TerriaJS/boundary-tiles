@@ -26,7 +26,7 @@ const boundaryTypes = {
             ELB_NAME_2019: {
                 regionProp: 'Sortname', // TODO normalise caps for NSW
                 nameProp: 'Sortname',
-                aliases: ['elb','elb_name'],
+                aliases: ['com_elb_name','com_elb_name_2019'],
                 description: 'Federal electoral divisions for 2019 election (AEC)',
                 bbox: [96.82, -43.74, 159.11, -9.14 ],
                 // optional extra props get passed straight through to regionMapping.json
