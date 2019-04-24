@@ -52,6 +52,7 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
 1. Name it according to the subdomain you will use, eg `tiles.terria.io`
    * Region: Asia Pacific (Sydney)
    * Uncheck all four "Manage public access control lists (ACLs) for this bucket" and "Manage public bucket policies for this bucket" options
+   * Under "Public access", add "List objects > Yes". (Otherwise, non-existent tiles will return a 403 instead of 404.)
 2. In the bucket, Permissions > Bucket Policy, paste this (updating the bucket name):
 
 ```
