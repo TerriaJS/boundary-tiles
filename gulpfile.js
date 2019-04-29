@@ -49,7 +49,7 @@ const boundaryTypes = {
             CED_CODE18: {
                 regionProp: 'CED_CODE18',
                 nameProp: 'CED_NAME18',
-                aliases: ['ced', 'ced_code', 'ced_2018', 'ced_code_2018'],
+                aliases: ['ced', 'ced_code', 'ced_2018', 'ced_code_2018', 'ced_code18'],
                 description: 'Commonwealth electoral divisions 2018 by code (ABS)',
                 bbox: [96.82, -43.74, 159.11, -9.14 ],
                 digits: 3
@@ -57,20 +57,58 @@ const boundaryTypes = {
             CED_NAME18: {
                 regionProp: 'CED_NAME18',
                 nameProp: 'CED_NAME18',
-                aliases: ['ced_name', 'ced_name_2018'],
+                aliases: ['ced_name', 'ced_name_2018', 'ced_name18'],
                 description: 'Commonwealth electoral divisions 2018 by name (ABS)',
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
+            },
+        }
+    }, SED_2018: {
+        shapeNames: {
+            '1270055003_sed_2018_aust_shp.zip': 'SED_2018_AUST.shp'
+        },  regionTypes: {
+            SED_CODE18: {
+                regionProp: 'SED_CODE18',
+                nameProp: 'SED_NAME18',
+                aliases: ['sed', 'sed_code', 'sed_2018', 'sed_code_2018', 'sed_code18'],
+                description: 'State electoral divisions 2018 by code (ABS)',
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
+            },
+            SED_NAME18: {
+                regionProp: 'SED_NAME18',
+                nameProp: 'SED_NAME18',
+                aliases: ['sed_name', 'sed_name_2018', 'sed_name18'],
+                description: 'State electoral divisions 2018 by code (ABS)',
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
+            },
+        }
+    }, SED_2016: {
+        shapeNames: {
+            '1270055003_sed_2016_aust_shp.zip': 'SED_2016_AUST.shp'
+        },  regionTypes: {
+            SED_CODE16: {
+                regionProp: 'SED_CODE16',
+                nameProp: 'SED_NAME16',
+                aliases: ['sed_2016', 'sed_code_2016', 'sed_code16'],
+                description: 'State electoral divisions 2016 by code (ABS)',
+                bbox: [96.82, -43.74, 159.11, -9.14 ],
+            },
+            SED_NAME16: {
+                regionProp: 'SED_NAME16',
+                nameProp: 'SED_NAME16',
+                aliases: ['sed_name_2016', 'sed_name16'],
+                description: 'State electoral divisions 2016 by code (ABS)',
                 bbox: [96.82, -43.74, 159.11, -9.14 ],
             },
         }
     }
 }
 
-let activeBoundaryTypes = Object.keys(boundaryTypes); // TODO or environment variable
+let activeBoundaryTypes = Object.keys(boundaryTypes);
 if (process.env.BOUNDARYTYPES) {
     activeBoundaryTypes = process.env.BOUNDARYTYPES.split(',');
 }
 
-const srcDataDir = `./srcdata`;                     // where to find source zip files. Nothing written here
+const srcDataDir = `./srcdata`;                 // where to find source zip files. Nothing written here
 const tmpDir = `./tmp`;                         // where zip files are temporarily unzipped to
 const geojsonDir = `./geojson`;                 // where generated newline-delimited GeoJSON files are written
 const regionMappingDir = `./regionMapping`;     // where to find and update regionmapping file and write regionids files
@@ -133,7 +171,7 @@ async function addFeatureIds() {
 async function makeVectorTiles() {
     mkdirp(mbtilesDir);
     for (let bt of activeBoundaryTypes) {
-        const btOptions = boundaryTypes[bt].tippecanoeOptions;
+        const btOptions = boundaryTypes[bt].tippecanoeOptions || { maximumZoom: 12, minimumZoom: 0 };
         tippecanoe(
             [`${geojsonDir}/${bt}-fid.nd.json`], 
             Object.assign({
@@ -142,7 +180,7 @@ async function makeVectorTiles() {
                 force: true,
                 readParallel: true,
                 simplifyOnlyLowZooms: true,
-                fullDetail: 32 - btOptions.maximumZoom,
+                fullDetail: 32 - (btOptions.maximumZoom || 12),
                 }, btOptions,
             ), 
             { echo: true });
@@ -161,13 +199,14 @@ async function writeRegionMappingFile() {
                 local: `http://localhost:4040/${bt}/{z}/{x}/{y}.pbf`
             }[env];
             const regionTypes = boundaryTypes[bt].regionTypes;
+            const btOptions = boundaryTypes[bt].tippecanoeOptions || { };
             for (let rt of Object.keys(regionTypes)) {
                 const regionMappingEntry = Object.assign({}, {
                     layerName: bt,
                     server: server,
                     serverType: 'MVT',
-                    serverMaxNativeZoom: boundaryTypes[bt].tippecanoeOptions.maximumZoom,
-                    serverMinZoom: boundaryTypes[bt].tippecanoeOptions.minimumZoom,
+                    serverMaxNativeZoom: bt.maximumZoom || 12,
+                    serverMinZoom: bt.minimumZoom || 0,
                     serverMaxZoom: 28,
                     regionIdsFile: `build/TerriaJS/data/regionids/region_map-${rt}_${bt}.json`,
                     // TODO bbox
@@ -187,7 +226,8 @@ function writeTestCsv(contents, bt, rt) {
     const filename =`${testCsvDir}/${bt}_${rt}.csv`;
     const rows = [[rt, 'Value']];
     contents.values.forEach(val => {
-        if (Math.random() > 0.8) {
+        const select = true; // Math.random() > 0.8
+        if (select) {
             rows.push([val, Math.round(Math.random() * 100)]);
         }
     });
@@ -302,7 +342,11 @@ async function deploy() {
         );
     }
 }
-  
+
+console.log('Boundary-tiles: generates vector tiles from boundary files.');
+console.log('To limit boundary types to be processed:   ');
+console.log('  $ BOUNDARYTYPES=SED_2018,CED_2018 gulp all');
+
 exports.makeVectorTiles = makeVectorTiles;
 exports.toGeoJSON = toGeoJSON;
 exports.writeRegionMappingFile = writeRegionMappingFile;
@@ -314,4 +358,5 @@ exports.deploy = deploy;
 
 exports.updateRegionMapping = series(makeRegionIds, writeRegionMappingFile);
 
-exports.default = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, exports.updateRegionMapping);
+exports.all = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, exports.updateRegionMapping);
+// exports.default = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, exports.updateRegionMapping);

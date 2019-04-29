@@ -9,20 +9,31 @@ It works on Node 8.2.1, and fails on many other versions, due to missing binarie
 yarn install
 ```
 
-### Usage
+### How to add a new boundary type
 
 Each boundary type has a specific identifier (eg, ELB_2019).
 
 1. Add configuration options for the boundary type at the top of the gulpfile.
 2. Place source files in `srcdata/ELB_2019`
-3. Run `gulp <task>`:
+3. Run gulp:
+    1. Optionally limit the boundary type with environment variable: 
+       export BOUNDARYTYPES=SED_2018
+    2. Run `gulp <task>`:
 
 * `toGeojson`: unzips source files and converts to newline-delimited GeoJSON
 * `addFeatureIds`: adds a FID field to each GeoJSON feature, writes to a new file.
 * `makeRegionIds`: generates a regionids file for each region prop.
 * `makeVectorTiles`: generates `mbtiles/ELB_2019.mbtiles` from the FID-enriched GeoJSON file.
 * `updateRegionMapping`: adds or updates an entry in `regionMapping/regionMapping.json`.
+* `all`: does all of the above
 * `deploy`: uploads the invidiual tiles from the `mbtiles` file to S3. You will need your MFA device.
+
+4. In TerriaJS:
+  1. Create a branch.
+  2. Splice into wwwroot/data/regionMapping.json part of the generated regionMapping/regionMapping.json
+  3. Update other entries in wwwroot/data/regionMapping.json if the default year for a region type has now changed.
+  4. Copy into wwwroot/data/regionids/ the generated files in regionMapping/regionids/
+  5. Open pull request.
 
 ### Configuration
 
@@ -52,23 +63,28 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
 1. Name it according to the subdomain you will use, eg `tiles.terria.io`
    * Region: Asia Pacific (Sydney)
    * Uncheck all four "Manage public access control lists (ACLs) for this bucket" and "Manage public bucket policies for this bucket" options
-   * Under "Public access", add "List objects > Yes". (Otherwise, non-existent tiles will return a 403 instead of 404.)
 2. In the bucket, Permissions > Bucket Policy, paste this (updating the bucket name):
 
 ```
- {
-   "Version":"2012-10-17",
-   "Statement":[{
-     "Sid":"PublicReadForGetBucketObjects",
-         "Effect":"Allow",
-       "Principal": "*",
-       "Action":["s3:GetObject"],
-       "Resource":["arn:aws:s3:::tiles.terria.io/*"
-       ]
-     }
-   ]
- }
-```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadForGetBucketObjects",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::tiles.terria.io/*"
+        },
+        {
+            "Sid": "PublicReadForListBucketContents",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::tiles.terria.io"
+        }
+    ]
+}```
 3. On Permissions > CORS Configuration, add this configuration:
 
 ```
