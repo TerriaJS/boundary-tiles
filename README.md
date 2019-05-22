@@ -84,7 +84,9 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
             "Resource": "arn:aws:s3:::tiles.terria.io"
         }
     ]
-}```
+}
+```
+
 3. On Permissions > CORS Configuration, add this configuration:
 
 ```
@@ -97,11 +99,10 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
     <AllowedHeader>Authorization</AllowedHeader>
 </CORSRule>
 </CORSConfiguration>
+```
 
 4. On Properties > Static website hosting, choose "Use this bucket to host a website"
   * Set "index.html" as the index document, even though you won't be using one. (Can't save otherwise).
-
-```
 
 #### CloudFront
 
