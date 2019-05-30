@@ -29,11 +29,11 @@ Each boundary type has a specific identifier (eg, ELB_2019).
 * `deploy`: uploads the invidiual tiles from the `mbtiles` file to S3. You will need your MFA device.
 
 4. In TerriaJS:
-  1. Create a branch.
-  2. Splice into wwwroot/data/regionMapping.json part of the generated regionMapping/regionMapping.json
-  3. Update other entries in wwwroot/data/regionMapping.json if the default year for a region type has now changed.
-  4. Copy into wwwroot/data/regionids/ the generated files in regionMapping/regionids/
-  5. Open pull request.
+    1. Create a branch.
+    2. Splice into wwwroot/data/regionMapping.json part of the generated regionMapping/regionMapping.json
+    3. Update other entries in wwwroot/data/regionMapping.json if the default year for a region type has now changed.
+    4. Copy into wwwroot/data/regionids/ the generated files in regionMapping/regionids/
+    5. Open pull request.
 
 ### Configuration
 
@@ -61,8 +61,8 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
 #### S3: Create bucket
 
 1. Name it according to the subdomain you will use, eg `tiles.terria.io`
-   * Region: Asia Pacific (Sydney)
-   * Uncheck all four "Manage public access control lists (ACLs) for this bucket" and "Manage public bucket policies for this bucket" options
+    * Region: Asia Pacific (Sydney)
+    * Uncheck all four "Manage public access control lists (ACLs) for this bucket" and "Manage public bucket policies for this bucket" options
 2. In the bucket, Permissions > Bucket Policy, paste this (updating the bucket name):
 
 ```
@@ -84,7 +84,9 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
             "Resource": "arn:aws:s3:::tiles.terria.io"
         }
     ]
-}```
+}
+```
+
 3. On Permissions > CORS Configuration, add this configuration:
 
 ```
@@ -97,24 +99,23 @@ Setting up AWS to serve vector tiles directly from S3 requires three main bits:
     <AllowedHeader>Authorization</AllowedHeader>
 </CORSRule>
 </CORSConfiguration>
+```
 
 4. On Properties > Static website hosting, choose "Use this bucket to host a website"
-  * Set "index.html" as the index document, even though you won't be using one. (Can't save otherwise).
-
-```
+    * Set "index.html" as the index document, even though you won't be using one. (Can't save otherwise).
 
 #### CloudFront
 
 1. Create a distribution, mode "Web".
-  *  Origin domain name: select your S3 name: `tiles.terria.io.s3.amazonaws.com`
-  * Scroll down, "Alternate domain names (CNAMEs)": `tiles.terria.io`
-  * SSL Certificate: "Custom SSL Certificate", choose terria.io's certificate.
+    * Origin domain name: select your S3 name: `tiles.terria.io.s3.amazonaws.com`
+    * Scroll down, "Alternate domain names (CNAMEs)": `tiles.terria.io`
+    * SSL Certificate: "Custom SSL Certificate", choose terria.io's certificate.
 2. On "Behaviors", edit the existing behaviour.
 3. Change "Cache based on Selected Request Headers" to "Whitelist"
-  * Add these to whitelist:
-    - Access-Control-Request-Headers
-    - Access-Control-Request-Method
-    - Origin
+    * Add these to whitelist:
+        - Access-Control-Request-Headers
+        - Access-Control-Request-Method
+        - Origin
 4. Set Object Caching to "Customize".
 5. Set Maximum TTL and default TTL to 120.
 
