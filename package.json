@@ -1,0 +1,25 @@
+{
+  "name": "boundary-tiles",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "gulp": "gulp",
+    "tessera": "tessera --config mbtiles --port 4040 --module @mapbox/mbtiles"
+  },
+  "author": "Steve Bennett <me@stevebennett.me> (http://stevebennett.me)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@mapbox/mapbox-tile-copy": "stevage/mapbox-tile-copy",
+    "@mapbox/mbtiles": "^0.10.0",
+    "can-ndjson-stream": "^1.0.0",
+    "gulp": "^4.0.0",
+    "jsonfile": "^5.0.0",
+    "mkdirp": "^0.5.1",
+    "ndjson": "^1.5.0",
+    "shelljs": "^0.8.3",
+    "shelljs.exec": "^1.1.8",
+    "tessera": "^0.14.1",
+    "tippecanoe": "^0.3.0"
+  }
+}
