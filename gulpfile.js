@@ -113,7 +113,7 @@ const tmpDir = `./tmp`;                         // where zip files are temporari
 const geojsonDir = `./geojson`;                 // where generated newline-delimited GeoJSON files are written
 const regionMappingDir = `./regionMapping`;     // where to find and update regionmapping file and write regionids files
 const tesseraDir = `./tessera`;                 // where to find and update tessera_config.json
-const tileHost = `tiles.terria.io`;
+const tileHost = `tile-test.terria.io`;
 const testCsvDir = './test';
 const mbtilesDir = './mbtiles';
 
