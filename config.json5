@@ -1,0 +1,22 @@
+// Configuration file for general use/tinkering
+{
+  DEMO_TRIANGLES: {
+    tippeCanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    shapeNames: {
+      "demo.zip": "POLYGON.shp", // The names of the zip archive and zipped files
+    },
+    regionTypes: {
+      // The name used in regionMapping.json
+      TRIANGLES: {
+        regionProp: "triangle", // The property with unique values to match with your csv data
+        nameProp: "triangle", // The property used to display the name of each region in Terria feature info
+        aliases: ["triangle"], // The column names in a csv or similar table item to detect this region type and match values against "regionProp" values
+        description: "An example region map of 3 triangles",
+        bbox: [144.19, -34.83, 153.38, -30.06], // A bounding box around the regions. Needed to avoid 404s when panning outside the bounds of the layer. Can clip visualisations if this is too small, but doesn't clip exactly at the bounding box (it clips at the closest tile edges outside the bounding box at any zoom level)
+      },
+    },
+  },
+}

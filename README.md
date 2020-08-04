@@ -2,28 +2,37 @@
 
 These scripts convert source geospatial files into boundary vector tiles, and upload them to AWS S3.
 
-It works on Node 8.2.1, and fails on many other versions, due to missing binaries used by Sqlite3.
-
+It works on Node 8 (tested on v8.15.1), and fails on many other versions, due to missing binaries used by Sqlite3.
 
 ```
-yarn install
+npm install
 ```
+
+### Pre-requisites
+
+* GDAL 2.4.0 or later (GDAL 3 untested, but may work)
+    + Optional. Used for converting shapefile to GeoJSON in `toGeoJSON` step
+* [Tippecanoe](https://github.com/mapbox/tippecanoe) version 1.32.10 or later
+    + Required for creating vector tiles in `makeVectorTiles` step
+* Node 8 (tested on v8.15.1)
 
 ### How to add a new boundary type
 
-Each boundary type has a specific identifier (eg, ELB_2019).
+Each boundary type has a specific identifier (eg, DEMO_TRIANGLES).
 
-1. Add configuration options for the boundary type at the top of the gulpfile.
-2. Place source files in `srcdata/ELB_2019`
+1. Add configuration options for the boundary type to `config.json5` (or other confifuration file if using `BOUNDARYTYPESCONFIG` environment variable).
+2. Place source files in `srcdata/DEMO_TRIANGLES`
 3. Run gulp:
-    1. Optionally limit the boundary type with environment variable: 
-       export BOUNDARYTYPES=SED_2018
-    2. Run `gulp <task>`:
+    1. Optionally set the configuration file to be read with environment variable: 
+       `export BOUNDARYTYPESCONFIG="./config-terria.json5"`
+    2. Optionally limit the boundary type(s) with comma-separated types in environment variable: 
+       `export BOUNDARYTYPES=DEMO_TRIANGLES`
+    3. Run `gulp <task>`:
 
-* `toGeojson`: unzips source files and converts to newline-delimited GeoJSON
+* `toGeoJSON`: unzips source files and converts to newline-delimited GeoJSON
 * `addFeatureIds`: adds a FID field to each GeoJSON feature, writes to a new file.
 * `makeRegionIds`: generates a regionids file for each region prop.
-* `makeVectorTiles`: generates `mbtiles/ELB_2019.mbtiles` from the FID-enriched GeoJSON file.
+* `makeVectorTiles`: generates `mbtiles/DEMO_TRIANGLES.mbtiles` from the FID-enriched GeoJSON file.
 * `updateRegionMapping`: adds or updates an entry in `regionMapping/regionMapping.json`.
 * `all`: does all of the above
 * `deploy`: uploads the invidiual tiles from the `mbtiles` file to S3. You will need your MFA device.
@@ -35,7 +44,19 @@ Each boundary type has a specific identifier (eg, ELB_2019).
     4. Copy into wwwroot/data/regionids/ the generated files in regionMapping/regionids/
     5. Open pull request.
 
-### Configuration
+### What if I have GeoJSON instead of zipped shapefiles?
+
+First convert the GeoJSON to [ndjson](http://ndjson.org/):
+
+`npm run geojson2ndjson triangles.geojson > ./geojson/DEMO_TRIANGLES.nd.json`
+
+Then run tasks as above, skipping `toGeoJSON`.
+
+### Adding a new boundary type to be uploaded to tiles.terria.io
+
+Configuration should be added to `config-terria.json5` and committed to the repo to preseve the options used.
+
+### Deploy to AWS configuration
 
 To use the `gulp deploy` script, first create a `userconfig.json` file in this directory, as follows:
 
@@ -51,7 +72,7 @@ You can find the correct values in your ~/.aws/config file.
 
 ### Setting up AWS
 
-Setting up AWS to serve vector tiles directly from S3 requires three main bits: 
+Setting up AWS to serve vector tiles directly from S3 requires three main bits:
 
 * an S3 bucket configured as a static website, with CORS enabled
 * a Route53 subdomain pointing at it

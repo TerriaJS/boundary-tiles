@@ -1,0 +1,108 @@
+
+  // A configuration file for use within the TerriaJS team. This should ideally be a record of options
+  //  used for every layer that we make available on tiles.terria.io
+  {
+  ELB_2019: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+      // maximumZoom: 12 // required
+    },
+    shapeNames: {
+      //https://www.aec.gov.au/electorates/gis/index.htm
+      "act-july-2018-esri.zip": "E_ACT_18_region.shp",
+      "nsw-esri-06042016.zip": "NSW_electoral_boundaries_25-02-2016.shp",
+      "nt-esri-07022017.zip": "E_Propos_region.shp",
+      "qld-march-2018-esri.zip": "E_AUGEC_region.shp",
+      "sa-july-2018-esri.zip": "E_FINAL_region.shp",
+      "tas-november-2017-esri.zip": "E_FINAL_region.shp",
+      "vic-july-2018-esri.zip": "E_AUGFN3_region.shp",
+      "wa-esri-19012016.zip": "WA_Electoral_Boundaries_19-01-2016.shp",
+    },
+    regionTypes: {
+      ELB_NAME_2019: {
+        regionProp: "Sortname", // TODO normalise caps for NSW
+        nameProp: "Sortname",
+        aliases: ["com_elb_name", "com_elb_name_2019"],
+        description: "Federal electoral divisions for 2019 election (AEC)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+        // optional extra props get passed straight through to regionMapping.json
+        // uniqueIdProp
+        // disambigProp
+        // disambigRegionId
+        // regionDisambigIdsFile
+      },
+    },
+  },
+  CED_2018: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+      // maximumZoom: 12 // required
+    },
+    shapeNames: {
+      // http://www.abs.gov.au/ausstats/subscriber.nsf/log?openagent&1270055003_ced_2018_aust_shp.zip&1270.0.55.003&Data%20Cubes&BF4D23C712D492CFCA2582F600180556&0&July%202018&28.08.2018&Latest
+      "1270055003_ced_2018_aust_shp.zip": "CED_2018_AUST.shp",
+    },
+    regionTypes: {
+      CED_CODE18: {
+        regionProp: "CED_CODE18",
+        nameProp: "CED_NAME18",
+        aliases: ["ced", "ced_code", "ced_2018", "ced_code_2018", "ced_code18"],
+        description: "Commonwealth electoral divisions 2018 by code (ABS)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+        digits: 3,
+      },
+      CED_NAME18: {
+        regionProp: "CED_NAME18",
+        nameProp: "CED_NAME18",
+        aliases: ["ced_name", "ced_name_2018", "ced_name18"],
+        description: "Commonwealth electoral divisions 2018 by name (ABS)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+      },
+    },
+  },
+  SED_2018: {
+    shapeNames: {
+      "1270055003_sed_2018_aust_shp.zip": "SED_2018_AUST.shp",
+    },
+    regionTypes: {
+      SED_CODE18: {
+        regionProp: "SED_CODE18",
+        nameProp: "SED_NAME18",
+        aliases: ["sed", "sed_code", "sed_2018", "sed_code_2018", "sed_code18"],
+        description: "State electoral divisions 2018 by code (ABS)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+      },
+      SED_NAME18: {
+        regionProp: "SED_NAME18",
+        nameProp: "SED_NAME18",
+        aliases: ["sed_name", "sed_name_2018", "sed_name18"],
+        description: "State electoral divisions 2018 by code (ABS)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+      },
+    },
+  },
+  SED_2016: {
+    shapeNames: {
+      "1270055003_sed_2016_aust_shp.zip": "SED_2016_AUST.shp",
+    },
+    regionTypes: {
+      SED_CODE16: {
+        regionProp: "SED_CODE16",
+        nameProp: "SED_NAME16",
+        aliases: ["sed_2016", "sed_code_2016", "sed_code16"],
+        description: "State electoral divisions 2016 by code (ABS)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+      },
+      SED_NAME16: {
+        regionProp: "SED_NAME16",
+        nameProp: "SED_NAME16",
+        aliases: ["sed_name_2016", "sed_name16"],
+        description: "State electoral divisions 2016 by code (ABS)",
+        bbox: [96.82, -43.74, 159.11, -9.14],
+      },
+    },
+  },
+}
+

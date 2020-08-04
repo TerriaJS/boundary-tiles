@@ -1,0 +1,5 @@
+*
+!gulpfile.js
+!*.json5
+!package.json
+!README.md
