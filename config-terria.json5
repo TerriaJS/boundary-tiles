@@ -1,7 +1,6 @@
-
-  // A configuration file for use within the TerriaJS team. This should ideally be a record of options
-  //  used for every layer that we make available on tiles.terria.io
-  {
+// A configuration file for use within the TerriaJS team. This should ideally be a record of options
+//  used for every layer that we make available on tiles.terria.io
+{
   ELB_2019: {
     tippecanoeOptions: {
       minimumZoom: 0,
@@ -105,4 +104,3 @@
     },
   },
 }
-
