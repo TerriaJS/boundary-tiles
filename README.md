@@ -20,7 +20,7 @@ npm install
 
 Each boundary type has a specific identifier (eg, DEMO_TRIANGLES).
 
-1. Add configuration options for the boundary type to `config.json5` (or other confifuration file if using `BOUNDARYTYPESCONFIG` environment variable).
+1. Add configuration options for the boundary type to `config.json5` (or other configuration file if using `BOUNDARYTYPESCONFIG` environment variable).
 2. Place source files in `srcdata/DEMO_TRIANGLES`
 3. Run gulp:
    1. Optionally set the configuration file to be read with environment variable:
