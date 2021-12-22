@@ -1,6 +1,25 @@
 // A configuration file for use within the TerriaJS team. This should ideally be a record of options
 //  used for every layer that we make available on tiles.terria.io
 {
+  ELB_2021: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    shapeNames: {
+      // From https://data.gov.au/data/dataset/commonwealth-electoral-divisions-as-at-2-august-2021
+      "2021-cwlth_electoral_boundaries_esri.zip": "2021_ELB_region.shp",
+    },
+    regionTypes: {
+      ELB_NAME_2021: {
+        regionProp: "Elect_div",
+        nameProp: "Elect_div",
+        aliases: ["com_elb_name_2021", "com_elb_name"],
+        description: "Commonwealth Electoral Divisions as at 2 August 2021 (AEC)",
+        bbox: [96.81, -43.73, 168.0, -9.1],
+      },
+    },
+  },
   ELB_2019: {
     tippecanoeOptions: {
       minimumZoom: 0,

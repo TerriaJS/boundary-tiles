@@ -153,10 +153,10 @@ async function writeRegionMappingFile() {
   );
 }
 
-function writeTestCsv(contents, bt, rt) {
+function writeTestCsv(contents, bt, rt, alias) {
   mkdirp(testCsvDir);
   const filename = `${testCsvDir}/${bt}_${rt}.csv`;
-  const rows = [[rt, "Value"]];
+  const rows = [[alias, "Value"]];
   contents.values.forEach((val) => {
     const select = true; // Math.random() > 0.8
     if (select) {
@@ -199,7 +199,11 @@ async function makeRegionIds() {
 
     for (let rt of Object.keys(regionTypes)) {
       const contents = await regionIdsContents(bt, rt); // TODO make parallel
-      writeTestCsv(contents, bt, rt);
+      if (
+        regionTypes[rt].aliases !== undefined &&
+        regionTypes[rt].aliases.length > 0
+      )
+        writeTestCsv(contents, bt, rt, regionTypes[rt].aliases[0]);
 
       const filename = `regionMapping/regionids/region_map-${rt}_${bt}.json`;
       fs.writeFileSync(filename, JSON.stringify(contents));
