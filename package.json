@@ -11,8 +11,6 @@
   "author": "Steve Bennett <me@stevebennett.me> (http://stevebennett.me)",
   "license": "Apache-2.0",
   "dependencies": {
-    "@mapbox/mapbox-tile-copy": "stevage/mapbox-tile-copy",
-    "@mapbox/mbtiles": "^0.10.0",
     "can-ndjson-stream": "^1.0.0",
     "geojson2ndjson": "^0.5.0",
     "gulp": "^4.0.0",

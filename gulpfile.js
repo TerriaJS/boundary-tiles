@@ -240,59 +240,59 @@ async function writeTessera() {
   }
 }
 
-async function deploy() {
-  function getProgress(stats, progress) {
-    // rewrites over the same line.
-    process.stdout.write(
-      `\r${progress.transferred} tiles, ${Math.round(progress.percentage)}% (${
-        progress.runtime
-      }s)`
-    );
-  }
+// async function deploy() {
+//   function getProgress(stats, progress) {
+//     // rewrites over the same line.
+//     process.stdout.write(
+//       `\r${progress.transferred} tiles, ${Math.round(progress.percentage)}% (${
+//         progress.runtime
+//       }s)`
+//     );
+//   }
 
-  const userConfig = require("./userconfig.json");
+//   const userConfig = require("./userconfig.json");
 
-  const response = throwIfFailed(
-    shell.exec(
-      `aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`,
-      { silent: true }
-    )
-  );
-  if (response.stderr) {
-    console.error(response.stderr);
-  }
-  const creds = JSON.parse(response.stdout).Credentials;
-  if (creds) {
-    console.log("AWS Session token acquired.");
-  }
-  process.env.AWS_ACCESS_KEY_ID = creds.AccessKeyId;
-  process.env.AWS_SECRET_ACCESS_KEY = creds.SecretAccessKey;
-  process.env.AWS_SESSION_TOKEN = creds.SessionToken;
+//   const response = throwIfFailed(
+//     shell.exec(
+//       `aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`,
+//       { silent: true }
+//     )
+//   );
+//   if (response.stderr) {
+//     console.error(response.stderr);
+//   }
+//   const creds = JSON.parse(response.stdout).Credentials;
+//   if (creds) {
+//     console.log("AWS Session token acquired.");
+//   }
+//   process.env.AWS_ACCESS_KEY_ID = creds.AccessKeyId;
+//   process.env.AWS_SECRET_ACCESS_KEY = creds.SecretAccessKey;
+//   process.env.AWS_SESSION_TOKEN = creds.SessionToken;
 
-  // console.log(`AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}`)
-  // console.log(`AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY}`);
-  // console.log(`AWS_SESSION_TOKEN=${process.env.AWS_SESSION_TOKEN}`);
+//   // console.log(`AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}`)
+//   // console.log(`AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY}`);
+//   // console.log(`AWS_SESSION_TOKEN=${process.env.AWS_SESSION_TOKEN}`);
 
-  for (let bt of activeBoundaryTypes) {
-    const tileCopy = require("@mapbox/mapbox-tile-copy");
-    console.log(""); // clear space before progress output
+//   for (let bt of activeBoundaryTypes) {
+//     const tileCopy = require("@mapbox/mapbox-tile-copy");
+//     console.log(""); // clear space before progress output
 
-    // alternative method: shell.exec(`mapbox-tile-copy  mbtiles/${bt}.mbtiles s3://tile-test.terria.io/${bt}/{z}/{x}/{y}.pbf`);
-    return new Promise((resolve, reject) =>
-      tileCopy(
-        `${mbtilesDir}/${bt}.mbtiles`,
-        `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`,
-        { progress: getProgress },
-        (d) => {
-          if (d !== undefined) {
-            console.log(d);
-          }
-          resolve();
-        }
-      )
-    );
-  }
-}
+//     // alternative method: shell.exec(`mapbox-tile-copy  mbtiles/${bt}.mbtiles s3://tile-test.terria.io/${bt}/{z}/{x}/{y}.pbf`);
+//     return new Promise((resolve, reject) =>
+//       tileCopy(
+//         `${mbtilesDir}/${bt}.mbtiles`,
+//         `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`,
+//         { progress: getProgress },
+//         (d) => {
+//           if (d !== undefined) {
+//             console.log(d);
+//           }
+//           resolve();
+//         }
+//       )
+//     );
+//   }
+// }
 
 console.log("Boundary-tiles: generates vector tiles from boundary files.");
 console.log("To limit boundary types to be processed:   ");
@@ -305,7 +305,7 @@ exports.makeRegionIds = makeRegionIds;
 exports.addFeatureIds = addFeatureIds;
 exports.writeTessera = writeTessera;
 // exports.updateTessera = updateTessera;
-exports.deploy = deploy;
+// exports.deploy = deploy;
 
 exports.updateRegionMapping = series(makeRegionIds, writeRegionMappingFile);
 
