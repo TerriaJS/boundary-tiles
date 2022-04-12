@@ -56,18 +56,9 @@ Then run tasks as above, skipping `toGeoJSON`.
 
 Configuration should be added to `config-terria.json5` and committed to the repo to preseve the options used.
 
-### Deploy to AWS configuration
+### Deploy to AWS 
 
-To use the `gulp deploy` script, first create a `userconfig.json` file in this directory, as follows:
-
-```
-{
-    "role_arn": "arn:aws:iam::123457890:role/owner",
-    "profile": "terria"
-}
-```
-
-You can find the correct values in your ~/.aws/config file.
+Use https://github.com/rowanwins/mbtiles-extractor to deploy tiles to an S3 bucket.
 
 ### Setting up AWS
 
