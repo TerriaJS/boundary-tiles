@@ -20,8 +20,8 @@ yarn install
 
 Each boundary type has a specific identifier (eg, `DEMO_TRIANGLES`).
 
-1. Add configuration options for the boundary type to `config.json5`
-2. Place source files in `srcdata` (matching boundary type name in `config.json5`)
+1. Add configuration options for the boundary type to [`config.json5`](./config.json5)
+2. Place source files in [`srcdata`](./srcdata) (matching boundary type name in [`config.json5`](./config.json5))
 
 **Optional ENVs**
 
@@ -32,7 +32,7 @@ Each boundary type has a specific identifier (eg, `DEMO_TRIANGLES`).
 
 ### Prepare GeoJSON
 
-#### If using `shapeNames`/shapefiles in `config.json5`
+#### If using `shapeNames`/shapefiles in [`config.json5`](./config.json5)
 
 - `gulp toGeoJSON`: unzips source files and converts to newline-delimited GeoJSON
 
@@ -50,7 +50,7 @@ Run `gulp <task>`:
 1. `addFeatureIds`: adds a FID field to each GeoJSON feature, writes to a new file.
 2. `makeRegionIds`: generates a regionids file for each region prop.
 3. `makeVectorTiles`: generates `mbtiles/$BOUNDARY_TYPE/{z}/{x}/{y}.pbf` from the FID-enriched GeoJSON file.
-4. `updateRegionMapping`: adds or updates an entry in `regionMapping/regionMapping.json`.
+4. `updateRegionMapping`: adds or updates an entry in [`regionMapping/regionMapping.json`](./regionMapping/regionMapping.json).
 5. `all`: does all of the above (including `toGeoJSON`)
 
 ### Preview tiles
@@ -63,13 +63,13 @@ Run `gulp previewInTerria` and click on link in console
 
 ### Add to TerriaJS region mapping
 
-1. Splice into `wwwroot/data/regionMapping.json` part of the generated `regionMapping/regionMapping.json`
+1. Splice into `wwwroot/data/regionMapping.json` part of the generated [`regionMapping/regionMapping.json`](./regionMapping/regionMapping.json)
 2. Update other entries in `wwwroot/data/regionMapping.json` if the default year for a region type has now changed.
-3. Copy into `wwwroot/data/regionids/` the generated files in `regionMapping/regionids/`
+3. Copy into `wwwroot/data/regionids/` the generated files in [`regionMapping/regionids/`](./regionMapping/regionids/)
 
 ### Adding a new boundary type to be uploaded to tiles.terria.io
 
-Configuration should be added to `config-terria.json5` and committed to the repo to preseve the options used.
+Configuration should be added to [`config-terria.json5`](./config-terria.json5) and committed to the repo to preseve the options used.
 
 ### Upload vector tiles to AWS S3
 
