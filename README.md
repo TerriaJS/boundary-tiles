@@ -1,136 +1,86 @@
-## Boundary-Tiles
+# Boundary-Tiles
 
-These scripts convert source geospatial files into boundary vector tiles, and upload them to AWS S3.
+These scripts convert source geospatial files into boundary vector tiles.
 
-It works on Node 8 (tested on v8.15.1), and fails on many other versions, due to missing binaries used by Sqlite3.
-
-```
+```bash
 npm install
 ```
 
-### Pre-requisites
+## Pre-requisites
 
 - GDAL 2.4.0 or later (GDAL 3 untested, but may work)
   - Optional. Used for converting shapefile to GeoJSON in `toGeoJSON` step
 - [Tippecanoe](https://github.com/mapbox/tippecanoe) version 1.32.10 or later
   - Required for creating vector tiles in `makeVectorTiles` step
-- Node 8 (tested on v8.15.1)
+- NodeJS (v14 working)
 
-### How to add a new boundary type
+## How to add a new boundary type
 
-Each boundary type has a specific identifier (eg, DEMO_TRIANGLES).
+### Setup config
 
-1. Add configuration options for the boundary type to `config.json5` (or other configuration file if using `BOUNDARYTYPESCONFIG` environment variable).
-2. Place source files in `srcdata/DEMO_TRIANGLES`
-3. Run gulp:
-   1. Optionally set the configuration file to be read with environment variable:
-      `export BOUNDARYTYPESCONFIG="./config-terria.json5"`
-   2. Optionally limit the boundary type(s) with comma-separated types in environment variable:
-      `export BOUNDARYTYPES=DEMO_TRIANGLES`
-   3. Run `gulp <task>`:
+Each boundary type has a specific identifier (eg, `DEMO_TRIANGLES`).
 
-- `toGeoJSON`: unzips source files and converts to newline-delimited GeoJSON
-- `addFeatureIds`: adds a FID field to each GeoJSON feature, writes to a new file.
-- `makeRegionIds`: generates a regionids file for each region prop.
-- `makeVectorTiles`: generates `mbtiles/DEMO_TRIANGLES.mbtiles` from the FID-enriched GeoJSON file.
-- `updateRegionMapping`: adds or updates an entry in `regionMapping/regionMapping.json`.
-- `all`: does all of the above
-- `deploy`: uploads the invidiual tiles from the `mbtiles` file to S3. You will need your MFA device.
+1. Add configuration options for the boundary type to `config.json5`
+2. Place source files in `srcdata` (matching boundary type name in `config.json5`)
 
-4. In TerriaJS:
-   1. Create a branch.
-   2. Splice into wwwroot/data/regionMapping.json part of the generated regionMapping/regionMapping.json
-   3. Update other entries in wwwroot/data/regionMapping.json if the default year for a region type has now changed.
-   4. Copy into wwwroot/data/regionids/ the generated files in regionMapping/regionids/
-   5. Open pull request.
+**Optional ENVs**
 
-### What if I have GeoJSON instead of zipped shapefiles?
+- Override the configuration file to be read with environment variable:
+  `export BOUNDARYTYPESCONFIG="./config-terria.json5"`
+- Limit the boundary type(s) with comma-separated types in environment variable:
+  `export BOUNDARYTYPES=DEMO_TRIANGLES`
 
-First convert the GeoJSON to [ndjson](http://ndjson.org/):
+### Prepare GeoJSON
 
-`npm run geojson2ndjson triangles.geojson > ./geojson/DEMO_TRIANGLES.nd.json`
+#### If using `shapeNames`/shapefiles in `config.json5`
 
-Then run tasks as above, skipping `toGeoJSON`.
+- `gulp toGeoJSON`: unzips source files and converts to newline-delimited GeoJSON
+
+#### OR If using geoJSON file
+
+Convert GeoJSON to [ndjson](http://ndjson.org/)
+
+- `npm run geojson2ndjson $INPUT_GEOJSON_PATH > ./geojson/$BOUNDARY_TYPE.nd.json`
+  - set `$BOUNDARY_TYPE` - for example `DEMO_TRIANGLES``
+
+### Then run
+
+Run `gulp <task>`:
+
+1. `addFeatureIds`: adds a FID field to each GeoJSON feature, writes to a new file.
+2. `makeRegionIds`: generates a regionids file for each region prop.
+3. `makeVectorTiles`: generates `mbtiles/$BOUNDARY_TYPE/{z}/{x}/{y}.pbf` from the FID-enriched GeoJSON file.
+4. `updateRegionMapping`: adds or updates an entry in `regionMapping/regionMapping.json`.
+5. `all`: does all of the above (including `toGeoJSON`)
+
+### Preview tiles
+
+**WARNING** this will serve the entire `boundary-tiles` directory on port 3000.
+
+This assumes you have `TerriaMap` running on port 3001
+
+Run `gulp previewInTerria` and click on link in console
+
+### Add to TerriaJS region mapping
+
+1. Splice into `wwwroot/data/regionMapping.json` part of the generated `regionMapping/regionMapping.json`
+2. Update other entries in `wwwroot/data/regionMapping.json` if the default year for a region type has now changed.
+3. Copy into `wwwroot/data/regionids/` the generated files in `regionMapping/regionids/`
 
 ### Adding a new boundary type to be uploaded to tiles.terria.io
 
 Configuration should be added to `config-terria.json5` and committed to the repo to preseve the options used.
 
-### Deploy to AWS 
+### Upload vector tiles to AWS S3
 
-Use https://github.com/rowanwins/mbtiles-extractor to deploy tiles to an S3 bucket.
-
-### Setting up AWS
-
-Setting up AWS to serve vector tiles directly from S3 requires three main bits:
-
-- an S3 bucket configured as a static website, with CORS enabled
-- a Route53 subdomain pointing at it
-- a CloudFront distribution pointing to the subdomain, with certificate and CORS settings
-
-#### S3: Create bucket
-
-1. Name it according to the subdomain you will use, eg `tiles.terria.io`
-   - Region: Asia Pacific (Sydney)
-   - Uncheck all four "Manage public access control lists (ACLs) for this bucket" and "Manage public bucket policies for this bucket" options
-2. In the bucket, Permissions > Bucket Policy, paste this (updating the bucket name):
-
-```
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadForGetBucketObjects",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::tiles.terria.io/*"
-        },
-        {
-            "Sid": "PublicReadForListBucketContents",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:ListBucket",
-            "Resource": "arn:aws:s3:::tiles.terria.io"
-        }
-    ]
-}
+```bash
+aws --profile terria s3 cp ./mbtiles/$BOUNDARY_TYPE s3://tiles.terria.io/$BOUNDARY_TYPE --recursive
 ```
 
-3. On Permissions > CORS Configuration, add this configuration:
+- You can run the above command with `--dryrun` flag to see uploaded paths
 
+You may want to increase number of concurrent requests
+
+```bash
+aws configure set s3.max_concurrent_requests 50 --profile terria
 ```
-<?xml version="1.0" encoding="UTF-8"?>
-<CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
-<CORSRule>
-    <AllowedOrigin>*</AllowedOrigin>
-    <AllowedMethod>GET</AllowedMethod>
-    <MaxAgeSeconds>3000</MaxAgeSeconds>
-    <AllowedHeader>Authorization</AllowedHeader>
-</CORSRule>
-</CORSConfiguration>
-```
-
-4. On Properties > Static website hosting, choose "Use this bucket to host a website"
-   - Set "index.html" as the index document, even though you won't be using one. (Can't save otherwise).
-
-#### CloudFront
-
-1. Create a distribution, mode "Web".
-   - Origin domain name: select your S3 name: `tiles.terria.io.s3.amazonaws.com`
-   - Scroll down, "Alternate domain names (CNAMEs)": `tiles.terria.io`
-   - SSL Certificate: "Custom SSL Certificate", choose terria.io's certificate.
-2. On "Behaviors", edit the existing behaviour.
-3. Change "Cache based on Selected Request Headers" to "Whitelist"
-   - Add these to whitelist:
-     - Access-Control-Request-Headers
-     - Access-Control-Request-Method
-     - Origin
-4. Set Object Caching to "Customize".
-5. Set Maximum TTL and default TTL to 120.
-
-#### Route 53: create subdomain
-
-1. Go to Hosted zones, terria.io
-2. Create a Record Set, `tiles.terria.io`
-3. Check the Alias "Yes" box, find your Cloudfront distribution

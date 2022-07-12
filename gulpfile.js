@@ -5,7 +5,6 @@ const fs = require("fs");
 const tippecanoe = require("tippecanoe");
 const mkdirp = require("mkdirp");
 const ndjson = require("ndjson");
-const jsonfile = require("jsonfile");
 const json5 = require("json5");
 
 const boundaryTypes = json5.parse(
@@ -21,8 +20,7 @@ const srcDataDir = `./srcdata`; // where to find source zip files. Nothing writt
 const tmpDir = `./tmp`; // where zip files are temporarily unzipped to
 const geojsonDir = `./geojson`; // where generated newline-delimited GeoJSON files are written
 const regionMappingDir = `./regionMapping`; // where to find and update regionmapping file and write regionids files
-const tesseraDir = `./tessera`; // where to find and update tessera_config.json
-const tileHost = `tile-test.terria.io`;
+const tileHost = `tiles.terria.io`;
 const testCsvDir = "./test";
 const mbtilesDir = "./mbtiles";
 
@@ -96,8 +94,12 @@ async function makeVectorTiles() {
       Object.assign(
         {
           layer: bt,
-          output: `${mbtilesDir}/${bt}.mbtiles`,
           force: true,
+          outputToDirectory: `${mbtilesDir}/${bt}/`,
+          // Mapbox will compress .pbf files if not set to true
+          // This isn't compatibly with protomaps
+          noTileCompression: true,
+          noTileSizeLimit: true,
           readParallel: true,
           simplifyOnlyLowZooms: true,
           fullDetail: 32 - (btOptions.maximumZoom || 12),
@@ -118,11 +120,17 @@ async function writeRegionMappingFile() {
     for (let bt of activeBoundaryTypes) {
       const server = {
         prod: `https://${tileHost}/${bt}/{z}/{x}/{y}.pbf`,
-        local: `http://localhost:4040/${bt}/{z}/{x}/{y}.pbf`,
+        local: `http://localhost:3000/mbtiles/${bt}/{z}/{x}/{y}.pbf`,
       }[env];
+
       const regionTypes = boundaryTypes[bt].regionTypes;
-      const btOptions = boundaryTypes[bt].tippecanoeOptions || {};
+
       for (let rt of Object.keys(regionTypes)) {
+        const regionIdsFile = {
+          prod: `build/TerriaJS/data/regionids/region_map-${rt}.json`,
+          local: `http://localhost:3000/regionMapping/regionids/region_map-${rt}.json`,
+        }[env];
+
         const regionMappingEntry = Object.assign(
           {},
           {
@@ -132,7 +140,8 @@ async function writeRegionMappingFile() {
             serverMaxNativeZoom: bt.maximumZoom || 12,
             serverMinZoom: bt.minimumZoom || 0,
             serverMaxZoom: 28,
-            regionIdsFile: `build/TerriaJS/data/regionids/region_map-${rt}_${bt}.json`,
+            regionIdsFile,
+            uniqueIdProp: "FID",
             // TODO bbox
           },
           regionTypes[rt]
@@ -205,7 +214,7 @@ async function makeRegionIds() {
       )
         writeTestCsv(contents, bt, rt, regionTypes[rt].aliases[0]);
 
-      const filename = `regionMapping/regionids/region_map-${rt}_${bt}.json`;
+      const filename = `regionMapping/regionids/region_map-${rt}.json`;
       fs.writeFileSync(filename, JSON.stringify(contents));
 
       console.log(`Wrote ${contents.values.length} regionIds to ${filename}`);
@@ -213,90 +222,42 @@ async function makeRegionIds() {
   }
 }
 
-// async function updateTessera() {
-//     mkdirp(tesseraDir);
-//     const configFile = `./${tesseraDir}/tessera_config.json`;
-//     const config = await jsonfile.readFile(configFile).catch(e => ({}));
-//     for (let  bt of activeBoundaryTypes) {
-//         const mbtilesFile = `data/${bt}.mbtiles`;
-//         config[`/${bt}`] = {
-//             source: `mbtiles:///etc/vector-tiles/${mbtilesFile}`,
-//             headers: {
-//                 'Cache-Control': 'public,max-age=86400'
-//             }
-//         }
-//     }
-//     await jsonfile.writeFile(configFile, config, { spaces: 2 });
-// }
+async function previewInTerria() {
+  const json = {
+    homeCamera: {
+      north: -8,
+      east: 158,
+      south: -45,
+      west: 109,
+    },
+    workbench: [],
+    catalog: [],
+  };
 
-// Writes some local config files for running a Tessera instance in development. Not needed for production.
-async function writeTessera() {
-  mkdirp(mbtilesDir);
   for (let bt of activeBoundaryTypes) {
-    const config = {
-      [`/${bt}`]: {
-        source: `mbtiles://./${mbtilesDir}/${bt}.mbtiles`,
-      },
-    };
-    await jsonfile.writeFile(`${mbtilesDir}/${bt}_tessera.json`, config, {
-      spaces: 2,
+    json.catalog.push({
+      layer: bt,
+      url: `http://localhost:3000/mbtiles/${bt}/{z}/{x}/{y}.pbf`,
+      id: bt,
+      name: bt,
+      fillColor: "#fdc086",
+      lineColor: "#7570b3",
+      type: "mvt",
     });
+    json.workbench.push(bt);
   }
+
+  console.log("\nServing entire `boundary-tiles` directory on port 3000!\n");
+
+  console.log(
+    `Preview URL:\n\nhttp://ci.terria.io/main/#clean&start=${JSON.stringify({
+      version: "8.0.0",
+      initSources: [json],
+    })}\n`
+  );
+
+  throwIfFailed(shell.exec("./node_modules/.bin/serve --cors"));
 }
-
-// async function deploy() {
-//   function getProgress(stats, progress) {
-//     // rewrites over the same line.
-//     process.stdout.write(
-//       `\r${progress.transferred} tiles, ${Math.round(progress.percentage)}% (${
-//         progress.runtime
-//       }s)`
-//     );
-//   }
-
-//   const userConfig = require("./userconfig.json");
-
-//   const response = throwIfFailed(
-//     shell.exec(
-//       `aws sts assume-role --role-arn ${userConfig.role_arn} --role-session-name upload-tiles --profile ${userConfig.profile}`,
-//       { silent: true }
-//     )
-//   );
-//   if (response.stderr) {
-//     console.error(response.stderr);
-//   }
-//   const creds = JSON.parse(response.stdout).Credentials;
-//   if (creds) {
-//     console.log("AWS Session token acquired.");
-//   }
-//   process.env.AWS_ACCESS_KEY_ID = creds.AccessKeyId;
-//   process.env.AWS_SECRET_ACCESS_KEY = creds.SecretAccessKey;
-//   process.env.AWS_SESSION_TOKEN = creds.SessionToken;
-
-//   // console.log(`AWS_ACCESS_KEY_ID=${process.env.AWS_ACCESS_KEY_ID}`)
-//   // console.log(`AWS_SECRET_ACCESS_KEY=${process.env.AWS_SECRET_ACCESS_KEY}`);
-//   // console.log(`AWS_SESSION_TOKEN=${process.env.AWS_SESSION_TOKEN}`);
-
-//   for (let bt of activeBoundaryTypes) {
-//     const tileCopy = require("@mapbox/mapbox-tile-copy");
-//     console.log(""); // clear space before progress output
-
-//     // alternative method: shell.exec(`mapbox-tile-copy  mbtiles/${bt}.mbtiles s3://tile-test.terria.io/${bt}/{z}/{x}/{y}.pbf`);
-//     return new Promise((resolve, reject) =>
-//       tileCopy(
-//         `${mbtilesDir}/${bt}.mbtiles`,
-//         `s3://${tileHost}/${bt}/{z}/{x}/{y}.pbf?timeout=20000`,
-//         { progress: getProgress },
-//         (d) => {
-//           if (d !== undefined) {
-//             console.log(d);
-//           }
-//           resolve();
-//         }
-//       )
-//     );
-//   }
-// }
 
 console.log("Boundary-tiles: generates vector tiles from boundary files.");
 console.log("To limit boundary types to be processed:   ");
@@ -307,9 +268,7 @@ exports.toGeoJSON = toGeoJSON;
 exports.writeRegionMappingFile = writeRegionMappingFile;
 exports.makeRegionIds = makeRegionIds;
 exports.addFeatureIds = addFeatureIds;
-exports.writeTessera = writeTessera;
-// exports.updateTessera = updateTessera;
-// exports.deploy = deploy;
+exports.previewInTerria = previewInTerria;
 
 exports.updateRegionMapping = series(makeRegionIds, writeRegionMappingFile);
 
@@ -320,4 +279,3 @@ exports.all = series(
   makeVectorTiles,
   exports.updateRegionMapping
 );
-// exports.default = series(toGeoJSON, addFeatureIds, makeRegionIds, makeVectorTiles, exports.updateRegionMapping);

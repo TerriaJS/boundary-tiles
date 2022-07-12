@@ -1,6 +1,23 @@
 // A configuration file for use within the TerriaJS team. This should ideally be a record of options
-//  used for every layer that we make available on tiles.terria.io
+// used for every layer that we make available on tiles.terria.io
 {
+  AREMI_ISF_combined_v22: {
+    tippeCanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    // GeoJSON file
+    // https://network-opportunity-maps.s3.ap-southeast-2.amazonaws.com/constraints/published/available_capacity.geojson
+    // From https://github.com/TerriaJS/nationalmap/issues/1153
+    regionTypes: {
+      // Region type - used as name/ID in regionMapping.json
+      AREMI_ISF_combined_v22_asset_code: {
+        regionProp: "asset_code", // The property with unique values to match with your csv data
+        nameProp: "asset_name", // The property used to display the name of each region in Terria feature info
+        aliases: ["asset_code"], // The column names in a csv or similar table item to detect this region type and match values against "regionProp" values
+      },
+    },
+  },
   ELB_2021: {
     tippecanoeOptions: {
       minimumZoom: 0,
