@@ -3,7 +3,7 @@
 These scripts convert source geospatial files into boundary vector tiles.
 
 ```bash
-npm install
+yarn install
 ```
 
 ## Pre-requisites
@@ -40,7 +40,7 @@ Each boundary type has a specific identifier (eg, `DEMO_TRIANGLES`).
 
 Convert GeoJSON to [ndjson](http://ndjson.org/)
 
-- `npm run geojson2ndjson $INPUT_GEOJSON_PATH > ./geojson/$BOUNDARY_TYPE.nd.json`
+- `yarn run geojson2ndjson $INPUT_GEOJSON_PATH > ./geojson/$BOUNDARY_TYPE.nd.json`
   - set `$BOUNDARY_TYPE` - for example `DEMO_TRIANGLES``
 
 ### Then run

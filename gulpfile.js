@@ -46,7 +46,7 @@ async function toGeoJSON() {
 
       let cmd =
         `ogr2ogr -t_srs EPSG:4326 -f GeoJSON /vsistdout "${tmpDir}/${boundaryTypes[bt].shapeNames[zipName]}" ` +
-        `| npm run --silent geojson2ndjson ` +
+        `| yarn run --silent geojson2ndjson ` +
         `>> ${geojsonName}`;
 
       console.log(cmd);
