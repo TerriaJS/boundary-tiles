@@ -16,7 +16,7 @@ yarn install
 
 ## How to add a new boundary type
 
-### Setup config
+### 1. Setup config
 
 Each boundary type has a specific identifier (eg, `DEMO_TRIANGLES`).
 
@@ -30,7 +30,7 @@ Each boundary type has a specific identifier (eg, `DEMO_TRIANGLES`).
 - Limit the boundary type(s) with comma-separated types in environment variable:
   `export BOUNDARYTYPES=DEMO_TRIANGLES`
 
-### Prepare GeoJSON
+### 2. Prepare GeoJSON
 
 #### If using `shapeNames`/shapefiles in [`config.json5`](./config.json5)
 
@@ -43,7 +43,7 @@ Convert GeoJSON to [ndjson](http://ndjson.org/)
 - `yarn run geojson2ndjson $INPUT_GEOJSON_PATH > ./geojson/$BOUNDARY_TYPE.nd.json`
   - set `$BOUNDARY_TYPE` - for example `DEMO_TRIANGLES``
 
-### Then run
+### 3. Then run
 
 Run `gulp <task>`:
 
