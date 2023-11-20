@@ -37,20 +37,39 @@ async function toGeoJSON() {
     const geojsonName = `${geojsonDir}/${bt}.nd.json`;
     shell.rm(`-f`, geojsonName);
 
-    const srcDir = `${srcDataDir}/${bt}`;
-    for (let zipName of Object.keys(boundaryTypes[bt].shapeNames)) {
+    if (boundaryTypes[bt].sharedGeopackage) {
+      // Pull 1 layer from ASGS geopackage with many region types
+      const { zip, gpkg, layerName } = boundaryTypes[bt].sharedGeopackage;
+      if (!(zip && gpkg && layerName))
+        throw new Error("Must define zip, gpkg and layerName");
+      const srcDir = `${srcDataDir}/geopackages`;
       shell.rm(`-f`, `${tmpDir}/*`);
-      throwIfFailed(shell.exec(`unzip -j ${srcDir}/${zipName} -d ${tmpDir}`));
-      // ogr2ogr doesn't seem to work properly with `/dev/stdout`
-      // .exec(...).toEnd(...) should work but truncates the file.
+      throwIfFailed(shell.exec(`unzip -j ${srcDir}/${zip} -d ${tmpDir}`));
 
       let cmd =
-        `ogr2ogr -t_srs EPSG:4326 -f GeoJSON /vsistdout "${tmpDir}/${boundaryTypes[bt].shapeNames[zipName]}" ` +
+        `ogr2ogr -t_srs EPSG:4326 -f GeoJSON /vsistdout "${tmpDir}/${gpkg}" ${layerName}` +
         `| yarn run --silent geojson2ndjson ` +
         `>> ${geojsonName}`;
 
       console.log(cmd);
       throwIfFailed(shell.exec(cmd, { silent: true }));
+    } else {
+      // Use 1 or more shapefiles to assmeble 1 region type
+      const srcDir = `${srcDataDir}/${bt}`;
+      for (let zipName of Object.keys(boundaryTypes[bt].shapeNames)) {
+        shell.rm(`-f`, `${tmpDir}/*`);
+        throwIfFailed(shell.exec(`unzip -j ${srcDir}/${zipName} -d ${tmpDir}`));
+        // ogr2ogr doesn't seem to work properly with `/dev/stdout`
+        // .exec(...).toEnd(...) should work but truncates the file.
+
+        let cmd =
+          `ogr2ogr -t_srs EPSG:4326 -f GeoJSON /vsistdout "${tmpDir}/${boundaryTypes[bt].shapeNames[zipName]}" ` +
+          `| yarn run --silent geojson2ndjson ` +
+          `>> ${geojsonName}`;
+
+        console.log(cmd);
+        throwIfFailed(shell.exec(cmd, { silent: true }));
+      }
     }
   }
 }
@@ -137,8 +156,10 @@ async function writeRegionMappingFile() {
             layerName: bt,
             server: server,
             serverType: "MVT",
-            serverMaxNativeZoom: bt.maximumZoom || 12,
-            serverMinZoom: bt.minimumZoom || 0,
+            serverMaxNativeZoom:
+              boundaryTypes[bt].tippecanoeOptions?.maximumZoom ?? 12,
+            serverMinZoom:
+              boundaryTypes[bt].tippecanoeOptions?.minimumZoom ?? 0,
             serverMaxZoom: 28,
             regionIdsFile,
             uniqueIdProp: "FID",
@@ -275,7 +296,6 @@ exports.updateRegionMapping = series(makeRegionIds, writeRegionMappingFile);
 exports.all = series(
   toGeoJSON,
   addFeatureIds,
-  makeRegionIds,
   makeVectorTiles,
   exports.updateRegionMapping
 );
