@@ -471,18 +471,19 @@
 
   City_of_Melbourne_CLUE: {
     tippecanoeOptions: {
-      minimumZoom: 0,
-      maximumZoom: 12,
+      minimumZoom: 10,
+      maximumZoom: 16,
     },
     // Downloaded as GeoJSON from https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/blocks-for-census-of-land-use-and-employment-clue/exports/geojson?lang=en&timezone=Australia%2FSydney
     // See https://data.melbourne.vic.gov.au/pages/clue/
+    // Convert
     regionTypes: {
       City_of_Melbourne_CLUE: {
         regionProp: "block_id",
         nameProp: "clue_area",
         aliases: [],
         description: "City of Melbourne Census of Land Use and Employment",
-        bbox: [145.0, -37.86, 144.88, -37.77],
+        bbox: [144.88, -37.86, 145.0, -37.77],
       },
     },
   },
