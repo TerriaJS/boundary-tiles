@@ -156,8 +156,10 @@ async function writeRegionMappingFile() {
             layerName: bt,
             server: server,
             serverType: "MVT",
-            serverMaxNativeZoom: bt.maximumZoom || 12,
-            serverMinZoom: bt.minimumZoom || 0,
+            serverMaxNativeZoom:
+              boundaryTypes[bt].tippecanoeOptions?.maximumZoom ?? 12,
+            serverMinZoom:
+              boundaryTypes[bt].tippecanoeOptions?.minimumZoom ?? 0,
             serverMaxZoom: 28,
             regionIdsFile,
             uniqueIdProp: "FID",
