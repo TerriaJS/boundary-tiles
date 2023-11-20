@@ -8,7 +8,7 @@
     "tessera": "tessera --config mbtiles --port 4040 --module @mapbox/mbtiles",
     "geojson2ndjson": "geojson2ndjson"
   },
-  "author": "Steve Bennett <me@stevebennett.me> (http://stevebennett.me)",
+  "author": "Stephen Davies <steve9164@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
     "can-ndjson-stream": "^1.0.0",
@@ -37,5 +37,10 @@
     "**/*": [
       "prettier --write"
     ]
-  }
+  },
+  "contributors": [
+    "Stephen Davies <steve9164@gmail.com>",
+    "Steve Bennett <stevage@gmail.com> (http://stevebennett.me)",
+    "Nick Forbes-Smith <nick@forbes-smith.com>"
+  ]
 }
