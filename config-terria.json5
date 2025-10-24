@@ -126,8 +126,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "SAL_2021_AUST_GDA2020",
     },
     regionTypes: {
@@ -147,8 +147,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "ADD_2021_AUST_GDA2020",
     },
     regionTypes: {
@@ -175,8 +175,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "DZN_2021_AUST_GDA2020",
     },
     regionTypes: {
@@ -196,8 +196,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "LGA_2022_AUST_GDA2020",
     },
     regionTypes: {
@@ -217,8 +217,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "LGA_2023_AUST_GDA2020",
     },
     regionTypes: {
@@ -231,6 +231,48 @@
       },
     },
   },
+  LGA_2024: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    sharedGeopackage: {
+      // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
+      layerName: "LGA_2024_AUST_GDA2020",
+    },
+    regionTypes: {
+      LGA_2024: {
+        regionProp: "LGA_CODE_2024",
+        nameProp: "LGA_NAME_2024",
+        aliases: ["lga_code_2024", "lga_code", "lga"],
+        description: "Local Government Areas 2024",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+    },
+  },
+  LGA_2025: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    sharedGeopackage: {
+      // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
+      layerName: "LGA_2025_AUST_GDA2020",
+    },
+    regionTypes: {
+      LGA_2025: {
+        regionProp: "LGA_CODE_2025",
+        nameProp: "LGA_NAME_2025",
+        aliases: ["lga_code_2025", "lga_code", "lga"],
+        description: "Local Government Areas 2025",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+    },
+  },
   SED_2021: {
     tippecanoeOptions: {
       minimumZoom: 0,
@@ -238,8 +280,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "SED_2021_AUST_GDA2020",
     },
     regionTypes: {
@@ -266,8 +308,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "SED_2022_AUST_GDA2020",
     },
     regionTypes: {
@@ -287,6 +329,62 @@
       },
     },
   },
+  SED_2024: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    sharedGeopackage: {
+      // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
+      layerName: "SED_2024_AUST_GDA2020",
+    },
+    regionTypes: {
+      SED_2024: {
+        regionProp: "SED_CODE_2024",
+        nameProp: "SED_NAME_2024",
+        aliases: ["sed_code_2024", "sed_code", "sed"],
+        description: "State Electoral Divisions 2024 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+      SED_NAME_2024: {
+        regionProp: "SED_NAME_2024",
+        nameProp: "SED_NAME_2024",
+        aliases: ["sed_name_2024", "sed_name"],
+        description: "State Electoral Divisions 2024 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+    },
+  },
+  SED_2025: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    sharedGeopackage: {
+      // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
+      layerName: "SED_2025_AUST_GDA2020",
+    },
+    regionTypes: {
+      SED_2025: {
+        regionProp: "SED_CODE_2025",
+        nameProp: "SED_NAME_2025",
+        aliases: ["sed_code_2025", "sed_code", "sed"],
+        description: "State Electoral Divisions 2025 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+      SED_NAME_2025: {
+        regionProp: "SED_NAME_2025",
+        nameProp: "SED_NAME_2025",
+        aliases: ["sed_name_2025", "sed_name"],
+        description: "State Electoral Divisions 2025 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+    },
+  },
   CED_2021: {
     tippecanoeOptions: {
       minimumZoom: 0,
@@ -294,8 +392,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "CED_2021_AUST_GDA2020",
     },
     regionTypes: {
@@ -315,6 +413,62 @@
       },
     },
   },
+  CED_2024: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    sharedGeopackage: {
+      // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2024-jun2026/access-and-downloads/digital-boundary-files
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
+      layerName: "CED_2024_AUST_GDA2020",
+    },
+    regionTypes: {
+      CED_2024: {
+        regionProp: "CED_CODE_2024",
+        nameProp: "CED_NAME_2024",
+        aliases: ["ced_code_2024", "ced_code", "ced"],
+        description: "Commonwealth Electoral Divisions 2024 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+      CED_NAME_2024: {
+        regionProp: "CED_NAME_2024",
+        nameProp: "CED_NAME_2024",
+        aliases: ["ced_name_2024", "ced_name"],
+        description: "Commonwealth Electoral Divisions 2024 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+    },
+  },
+  CED_2025: {
+    tippecanoeOptions: {
+      minimumZoom: 0,
+      maximumZoom: 12,
+    },
+    sharedGeopackage: {
+      // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2025-jun2026/access-and-downloads/digital-boundary-files
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
+      layerName: "CED_2025_AUST_GDA2020",
+    },
+    regionTypes: {
+      CED_2025: {
+        regionProp: "CED_CODE_2025",
+        nameProp: "CED_NAME_2025",
+        aliases: ["ced_code_2025", "ced_code", "ced"],
+        description: "Commonwealth Electoral Divisions 2025 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+      CED_NAME_2025: {
+        regionProp: "CED_NAME_2025",
+        nameProp: "CED_NAME_2025",
+        aliases: ["ced_name_2025", "ced_name"],
+        description: "Commonwealth Electoral Divisions 2025 (ABS)",
+        bbox: [96.81, -43.74, 168.0, -9.14],
+      },
+    },
+  },
   POA_2021: {
     tippecanoeOptions: {
       minimumZoom: 0,
@@ -322,8 +476,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "POA_2021_AUST_GDA2020",
     },
     regionTypes: {
@@ -349,8 +503,8 @@
     },
     sharedGeopackage: {
       // From https://www.abs.gov.au/statistics/standards/australian-statistical-geography-standard-asgs-edition-3/jul2021-jun2026/access-and-downloads/digital-boundary-files
-      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.zip",
-      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2023.gpkg",
+      zip: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.zip",
+      gpkg: "ASGS_Ed3_Non_ABS_Structures_GDA2020_updated_2025.gpkg",
       layerName: "TR_2021_AUST_GDA2020",
     },
     regionTypes: {
